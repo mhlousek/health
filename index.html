@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zpět ve formě — přehled</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F4F6F9; --surface:#FFFFFF; --ink:#14161F; --muted:#6B7180;
+    --line:#E5E8EE; --line-strong:#D2D7E0;
+    --run:#2E5BFF; --run-soft:#E7ECFF;
+    --strength:#F0992E; --strength-soft:#FCEFD9;
+    --mob:#23B187; --mob-soft:#DDF3EC;
+    --good:#1FA56B; --bad:#D8593F;
+    --shadow:0 1px 2px rgba(20,22,31,.04), 0 8px 24px -12px rgba(20,22,31,.12);
+    --r:16px;
+    --display:'Space Grotesk',ui-sans-serif,system-ui,sans-serif;
+    --body:'Hanken Grotesk',ui-sans-serif,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg); color:var(--ink); font-family:var(--body); -webkit-font-smoothing:antialiased; line-height:1.45; padding:clamp(14px,3vw,32px)}
+  .wrap{max-width:1080px; margin:0 auto}
+  .num{font-family:var(--display); font-variant-numeric:tabular-nums lining-nums; font-feature-settings:"tnum"}
+  .eyebrow{font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600}
+  .hidden{display:none!important}
+
+  .topbar{display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:22px}
+  .brand h1{font-family:var(--display); font-weight:700; font-size:clamp(22px,4vw,30px); margin:2px 0 0; letter-spacing:-.01em}
+  .brand .sub{color:var(--muted); font-size:13px}
+  .data-actions{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+  .who{font-size:12px; color:var(--muted); margin-right:2px}
+  .btn{font-family:var(--body); font-weight:600; font-size:13px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink); padding:9px 13px; border-radius:10px; cursor:pointer; display:inline-flex; align-items:center; gap:7px; transition:border-color .15s, transform .05s}
+  .btn:hover{border-color:var(--ink)} .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--ink); color:#fff; border-color:var(--ink)} .btn-primary:hover{background:#000}
+  .btn[disabled]{opacity:.5; cursor:default}
+
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow)}
+  .pad{padding:clamp(16px,2.4vw,22px)}
+
+  .screen{max-width:440px; margin:8vh auto 0}
+  .screen .card{padding:30px}
+  .screen .eyebrow{margin-bottom:10px}
+  .screen h2{font-family:var(--display); font-weight:700; font-size:24px; margin:0 0 8px}
+  .screen p{color:var(--muted); font-size:14px; margin:0 0 18px}
+  .screen input{width:100%; font-family:var(--body); font-size:15px; padding:12px 13px; border:1px solid var(--line-strong); border-radius:10px; margin-bottom:12px}
+  .screen input:focus{outline:2px solid var(--run); outline-offset:1px; border-color:var(--run)}
+  .screen .full{width:100%; justify-content:center; padding:12px}
+  .msg{font-size:13px; margin-top:12px; padding:10px 12px; border-radius:10px; display:none}
+  .msg.ok{display:block; background:var(--mob-soft); color:#0E6B4F}
+  .msg.err{display:block; background:#FBE9E4; color:var(--bad)}
+  .steps{font-size:13px; color:var(--muted); line-height:1.6; padding-left:18px; margin:0}
+  .steps code{font-family:var(--display); background:var(--bg); padding:1px 6px; border-radius:5px; color:var(--ink); font-size:12px}
+
+  .week{margin-bottom:18px}
+  .week-head{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:14px; flex-wrap:wrap}
+  .week-sum{font-family:var(--display); font-weight:600; font-size:14px; color:var(--muted)} .week-sum b{color:var(--ink)}
+  .days{display:grid; grid-template-columns:repeat(7,1fr); gap:8px}
+  .day{display:flex; flex-direction:column; align-items:center; gap:8px}
+  .day .dl{font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:600}
+  .day.today .dl{color:var(--ink)}
+  .lane{width:100%; min-height:54px; border-radius:12px; border:1.5px dashed var(--line-strong); display:flex; flex-direction:column; gap:4px; align-items:center; justify-content:center; padding:7px 4px; background:#FCFCFD}
+  .day.today .lane{border-style:solid; border-color:var(--ink); background:#fff}
+  .day.filled .lane{border-style:solid; border-color:var(--line)}
+  .chip{font-size:10px; font-weight:700; letter-spacing:.03em; padding:3px 7px; border-radius:999px; white-space:nowrap}
+  .chip.run{background:var(--run-soft); color:var(--run)} .chip.str{background:var(--strength-soft); color:#9A5A05} .chip.mob{background:var(--mob-soft); color:#0E6B4F}
+  .lane .empty{color:var(--line-strong); font-size:18px; line-height:1}
+
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px}
+  .stat .eyebrow{margin-bottom:8px}
+  .stat .val{font-family:var(--display); font-weight:600; font-size:clamp(24px,3.4vw,30px); letter-spacing:-.01em; line-height:1}
+  .stat .unit{font-size:13px; color:var(--muted); font-weight:500; margin-left:3px}
+  .delta{font-size:12px; font-weight:600; margin-top:7px; display:inline-flex; align-items:center; gap:4px}
+  .delta.up{color:var(--good)} .delta.down{color:var(--bad)} .delta.flat{color:var(--muted)}
+  .goalbar{height:6px; border-radius:999px; background:var(--line); margin-top:10px; overflow:hidden}
+  .goalbar > i{display:block; height:100%; background:var(--run); border-radius:999px}
+  .goal-cap{font-size:11px; color:var(--muted); margin-top:6px}
+
+  .hero{margin-bottom:18px}
+  .hero-head{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:6px}
+  .metric-switch{display:flex; gap:4px; background:var(--bg); padding:4px; border-radius:11px; border:1px solid var(--line)}
+  .metric-switch button{font-family:var(--body); font-weight:600; font-size:12.5px; border:0; background:transparent; color:var(--muted); padding:7px 11px; border-radius:8px; cursor:pointer}
+  .metric-switch button[aria-pressed="true"]{background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.06)}
+  .chart-box{width:100%} .chart-box svg{width:100%; height:auto; display:block}
+
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:18px}
+  .ch-title{font-family:var(--display); font-weight:600; font-size:15px; margin:0 0 4px}
+  .ch-note{font-size:12px; color:var(--muted); margin:0 0 14px}
+
+  .addrow{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:18px}
+  .add{cursor:pointer; border:1px solid var(--line); text-align:left; padding:16px 18px; background:var(--surface); border-radius:var(--r); box-shadow:var(--shadow); transition:transform .06s, border-color .15s; font-family:var(--body)}
+  .add:hover{border-color:var(--ink)} .add:active{transform:translateY(1px)}
+  .add .lab{font-family:var(--display); font-weight:600; font-size:16px; display:flex; align-items:center; gap:9px}
+  .add .desc{font-size:12.5px; color:var(--muted); margin-top:3px}
+  .dot{width:9px; height:9px; border-radius:3px; display:inline-block}
+  .dot.run{background:var(--run)} .dot.str{background:var(--strength)} .dot.meas{background:var(--mob)}
+
+  .hist .tabs{display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap}
+  .tab{font-family:var(--body); font-weight:600; font-size:13px; border:1px solid var(--line); background:var(--surface); color:var(--muted); padding:8px 13px; border-radius:999px; cursor:pointer}
+  .tab[aria-pressed="true"]{background:var(--ink); color:#fff; border-color:var(--ink)}
+  table{width:100%; border-collapse:collapse; font-size:13.5px}
+  th{text-align:left; font-weight:600; color:var(--muted); font-size:11px; letter-spacing:.06em; text-transform:uppercase; padding:0 12px 10px; border-bottom:1px solid var(--line)}
+  td{padding:12px; border-bottom:1px solid var(--line)} td.n{font-family:var(--display); font-variant-numeric:tabular-nums}
+  tr:last-child td{border-bottom:0}
+  .del{border:0; background:transparent; color:var(--muted); cursor:pointer; font-size:16px; line-height:1; padding:4px 6px; border-radius:6px}
+  .del:hover{background:#FBE9E4; color:var(--bad)}
+  .empty-state{text-align:center; color:var(--muted); padding:34px 16px; font-size:14px} .empty-state b{color:var(--ink); font-family:var(--display)}
+
+  .scrim{position:fixed; inset:0; background:rgba(20,22,31,.42); backdrop-filter:blur(2px); display:none; align-items:center; justify-content:center; padding:18px; z-index:50}
+  .scrim.open{display:flex}
+  .modal{background:var(--surface); border-radius:20px; width:min(460px,100%); box-shadow:0 24px 60px -20px rgba(20,22,31,.5); max-height:92vh; overflow:auto}
+  .modal-head{display:flex; align-items:center; justify-content:space-between; padding:20px 22px 6px}
+  .modal-head h3{font-family:var(--display); font-weight:600; font-size:18px; margin:0}
+  .modal .x{border:0; background:transparent; font-size:22px; cursor:pointer; color:var(--muted); line-height:1; padding:4px}
+  .form{padding:8px 22px 22px; display:grid; gap:14px}
+  .field{display:grid; gap:6px} .field label{font-size:12.5px; font-weight:600; color:var(--muted)}
+  .field input, .field select, .field textarea{font-family:var(--body); font-size:14px; padding:11px 12px; border:1px solid var(--line-strong); border-radius:10px; background:#fff; color:var(--ink); width:100%}
+  .field input:focus, .field select:focus, .field textarea:focus{outline:2px solid var(--run); outline-offset:1px; border-color:var(--run)}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .hint{font-size:11.5px; color:var(--muted)}
+
+  .syncbar{position:fixed; left:50%; transform:translateX(-50%); bottom:18px; background:var(--ink); color:#fff; font-size:13px; padding:9px 16px; border-radius:999px; box-shadow:var(--shadow); display:none; z-index:60}
+  .syncbar.show{display:block}
+
+  :focus-visible{outline:2px solid var(--run); outline-offset:2px}
+  @media (max-width:760px){ .stats{grid-template-columns:repeat(2,1fr)} .grid2{grid-template-columns:1fr} .addrow{grid-template-columns:1fr} .day .dl{font-size:10px} .chip{font-size:9px; padding:2px 5px} }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+</style>
+</head>
+<body>
+
+<div id="setup" class="screen hidden">
+  <div class="card">
+    <div class="eyebrow">Nastavení</div>
+    <h2>Skoro hotovo 👋</h2>
+    <p>Aplikace ještě nemá propojení s tvojí databází. Otevři <code>index.html</code> a nahoře v sekci <code>CONFIG</code> vlož svoje dvě hodnoty ze Supabase:</p>
+    <ol class="steps">
+      <li>V Supabase → <b>Project Settings → API</b></li>
+      <li>Zkopíruj <code>Project URL</code> a <code>anon public</code> klíč</li>
+      <li>Vlož je do <code>SUPABASE_URL</code> a <code>SUPABASE_ANON_KEY</code></li>
+      <li>Ulož, nahraj na web a obnov stránku</li>
+    </ol>
+  </div>
+</div>
+
+<div id="auth" class="screen hidden">
+  <div class="card">
+    <div class="eyebrow">Zpět ve formě</div>
+    <h2>Přihlášení</h2>
+    <p>Zadej e-mail — pošleme ti přihlašovací odkaz. Žádné heslo si nemusíš pamatovat.</p>
+    <input type="email" id="authEmail" placeholder="tvuj@email.cz" autocomplete="email">
+    <button class="btn btn-primary full" id="authBtn">Poslat přihlašovací odkaz</button>
+    <div class="msg" id="authMsg"></div>
+  </div>
+</div>
+
+<div id="app" class="wrap hidden">
+  <div class="topbar">
+    <div class="brand">
+      <div class="eyebrow">Osobní přehled</div>
+      <h1>Zpět ve formě</h1>
+      <div class="sub" id="sub">Synchronizováno napříč zařízeními</div>
+    </div>
+    <div class="data-actions">
+      <span class="who" id="who"></span>
+      <button class="btn" id="exportBtn" title="Stáhnout zálohu">Export</button>
+      <button class="btn" id="importBtn" title="Načíst zálohu / migraci">Import</button>
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+      <button class="btn" id="signout">Odhlásit</button>
+    </div>
+  </div>
+
+  <section class="card pad week">
+    <div class="week-head"><div class="eyebrow">Tento týden</div><div class="week-sum" id="weekSum"></div></div>
+    <div class="days" id="weekDays"></div>
+  </section>
+
+  <section class="stats">
+    <div class="card pad stat" id="statVo2"></div>
+    <div class="card pad stat" id="statWeight"></div>
+    <div class="card pad stat" id="statFat"></div>
+    <div class="card pad stat" id="statRhr"></div>
+  </section>
+
+  <section class="card pad hero">
+    <div class="hero-head">
+      <div><div class="eyebrow">Trend v čase</div><h2 class="ch-title" id="heroTitle" style="margin-top:4px">VO₂max</h2></div>
+      <div class="metric-switch" id="metricSwitch">
+        <button data-m="vo2max" aria-pressed="true">VO₂max</button>
+        <button data-m="weight" aria-pressed="false">Váha</button>
+        <button data-m="bodyFat" aria-pressed="false">Tuk %</button>
+        <button data-m="restingHR" aria-pressed="false">Klidový tep</button>
+      </div>
+    </div>
+    <div class="chart-box" id="heroChart"></div>
+  </section>
+
+  <section class="grid2">
+    <div class="card pad"><h3 class="ch-title">Týdenní kilometry</h3><p class="ch-note">Součet naběhaných km, posledních 8 týdnů</p><div class="chart-box" id="kmChart"></div></div>
+    <div class="card pad"><h3 class="ch-title">Konzistence</h3><p class="ch-note">Jednotky za týden — běh + síla. Cíl: 4×</p><div class="chart-box" id="consChart"></div></div>
+  </section>
+
+  <section class="addrow">
+    <button class="add" data-add="run"><div class="lab"><span class="dot run"></span>Zalogovat běh</div><div class="desc">Datum, km, čas → tempo se dopočítá</div></button>
+    <button class="add" data-add="workout"><div class="lab"><span class="dot str"></span>Zalogovat trénink</div><div class="desc">Síla A/B, mobilita nebo jiný pohyb</div></button>
+    <button class="add" data-add="measurement"><div class="lab"><span class="dot meas"></span>Zapsat měření</div><div class="desc">Váha, tuk, pas, VO₂max, tep, HRV</div></button>
+  </section>
+
+  <section class="card pad hist">
+    <div class="tabs" id="histTabs">
+      <button class="tab" data-t="runs" aria-pressed="true">Běhy</button>
+      <button class="tab" data-t="workouts" aria-pressed="false">Tréninky</button>
+      <button class="tab" data-t="measurements" aria-pressed="false">Měření</button>
+    </div>
+    <div id="histBody"></div>
+  </section>
+</div>
+
+<div class="scrim" id="scrim">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-head"><h3 id="modalTitle">Záznam</h3><button class="x" id="modalX" aria-label="Zavřít">×</button></div>
+    <div class="form" id="modalForm"></div>
+  </div>
+</div>
+<div class="syncbar" id="syncbar">Ukládám…</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ============================================================
+   CONFIG — sem vlož svoje hodnoty ze Supabase (Settings → API)
+   Pozor: použij klíč "anon public", NIKDY "service_role".
+   anon klíč je určený do prohlížeče; data chrání RLS (přihlášení).
+   ============================================================ */
+const SUPABASE_URL      = 'https://guyvjxqzdszrjnsgidhn.supabase.co/rest/v1/';
+const SUPABASE_ANON_KEY = 'sb_publishable_tcKhexjRlC2BU6SWvwidgA_BFU05iQm';
+/* ============================================================ */
+
+const $=id=>document.getElementById(id);
+const configured = SUPABASE_URL.startsWith('http') && SUPABASE_ANON_KEY.length>20;
+let sb=null, state={runs:[],workouts:[],measurements:[]}, heroMetric='vo2max', histTab='runs';
+
+function show(which){ ['setup','auth','app'].forEach(s=>$(s).classList.toggle('hidden', s!==which)); }
+function syncing(on,txt='Ukládám…'){ const b=$('syncbar'); b.textContent=txt; b.classList.toggle('show',on); }
+
+if(!configured){ show('setup'); }
+else if(!window.supabase){ show('setup'); $('setup').querySelector('p').textContent='Nepodařilo se načíst knihovnu Supabase (zkontroluj připojení) a obnov stránku.'; }
+else { boot(); }
+
+async function boot(){
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const { data:{ session } } = await sb.auth.getSession();
+  if(session){ enterApp(session); } else { show('auth'); }
+  sb.auth.onAuthStateChange((_e,s)=>{ if(s){ enterApp(s); } else { show('auth'); } });
+}
+
+$('authBtn').onclick=async ()=>{
+  const email=$('authEmail').value.trim(); const msg=$('authMsg');
+  if(!email){ msg.className='msg err'; msg.textContent='Zadej e-mail.'; return; }
+  $('authBtn').disabled=true;
+  const { error } = await sb.auth.signInWithOtp({ email, options:{ emailRedirectTo: window.location.href.split('#')[0] } });
+  $('authBtn').disabled=false;
+  if(error){ msg.className='msg err'; msg.textContent='Chyba: '+error.message; }
+  else { msg.className='msg ok'; msg.textContent='Odkaz je na cestě — mrkni do e-mailu a klikni na něj.'; }
+};
+$('signout').onclick=async ()=>{ await sb.auth.signOut(); };
+
+let booted=false;
+async function enterApp(session){
+  show('app'); $('who').textContent=session.user.email;
+  if(booted) return; booted=true;
+  await loadAll(); render();
+}
+
+const fromMeas=r=>({id:r.id,date:r.date,weight:r.weight,bodyFat:r.body_fat,waist:r.waist,visceral:r.visceral,vo2max:r.vo2max,restingHR:r.resting_hr,hrv:r.hrv,notes:r.notes});
+const fromRun =r=>({id:r.id,date:r.date,km:r.km,durationMin:r.duration_min,avgHR:r.avg_hr,notes:r.notes});
+const fromWork=r=>({id:r.id,date:r.date,type:r.type,notes:r.notes});
+
+async function loadAll(){
+  syncing(true,'Načítám data…');
+  const [m,r,w]=await Promise.all([
+    sb.from('measurements').select('*').order('date'),
+    sb.from('runs').select('*').order('date'),
+    sb.from('workouts').select('*').order('date'),
+  ]);
+  state.measurements=(m.data||[]).map(fromMeas);
+  state.runs=(r.data||[]).map(fromRun);
+  state.workouts=(w.data||[]).map(fromWork);
+  syncing(false);
+}
+async function addRow(table,row,mapper,arr){
+  syncing(true);
+  const { data, error } = await sb.from(table).insert(row).select().single();
+  syncing(false);
+  if(error){ alert('Uložení selhalo: '+error.message); return false; }
+  state[arr].push(mapper(data)); render(); return true;
+}
+async function delRow(table,id,arr){
+  syncing(true);
+  const { error } = await sb.from(table).delete().eq('id',id);
+  syncing(false);
+  if(error){ alert('Mazání selhalo: '+error.message); return; }
+  state[arr]=state[arr].filter(x=>x.id!==id); render();
+}
+
+function today(){ return new Date().toISOString().slice(0,10); }
+function parseD(s){ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
+function fmtDate(s){ return parseD(s).toLocaleDateString('cs-CZ',{day:'numeric',month:'short'}); }
+function startOfWeek(d){ const x=new Date(d); const k=(x.getDay()+6)%7; x.setDate(x.getDate()-k); x.setHours(0,0,0,0); return x; }
+function weekKey(s){ return startOfWeek(parseD(s)).toISOString().slice(0,10); }
+function pace(min,km){ if(!km||!min) return '—'; const p=min/km, m=Math.floor(p), sec=Math.round((p-m)*60); return `${m}:${String(sec).padStart(2,'0')}`; }
+const METRICS={ vo2max:{label:'VO₂max',unit:'',goodUp:true,goal:50,dec:1}, weight:{label:'Váha',unit:'kg',goodUp:false,dec:1}, bodyFat:{label:'Tuk',unit:'%',goodUp:false,dec:1}, restingHR:{label:'Klidový tep',unit:'bpm',goodUp:false,dec:0} };
+function seriesOf(m){ return state.measurements.filter(x=>x[m]!=null&&x[m]!=='').map(x=>({date:x.date,v:+x[m]})).sort((a,b)=>a.date<b.date?-1:1); }
+
+function lineChart(pts,{color='#2E5BFF',unit='',dec=1,goal=null}={}){
+  const W=620,H=210,pl=14,pr=46,pt=18,pb=26;
+  if(!pts.length) return `<svg viewBox="0 0 ${W} ${H}"><text x="${W/2}" y="${H/2}" text-anchor="middle" fill="#6B7180" font-family="Hanken Grotesk" font-size="13">Zatím žádná data k zobrazení</text></svg>`;
+  const vals=pts.map(p=>p.v); let lo=Math.min(...vals),hi=Math.max(...vals);
+  if(goal!=null){lo=Math.min(lo,goal);hi=Math.max(hi,goal);} if(lo===hi){lo-=1;hi+=1;}
+  const pad=(hi-lo)*.18; lo-=pad; hi+=pad;
+  const X=i=> pts.length===1?(pl+(W-pl-pr)/2):pl+i*(W-pl-pr)/(pts.length-1);
+  const Y=v=> pt+(1-(v-lo)/(hi-lo))*(H-pt-pb);
+  let g='';
+  [0,.5,1].forEach(t=>{const v=lo+(hi-lo)*t,y=Y(v); g+=`<line x1="${pl}" y1="${y}" x2="${W-pr}" y2="${y}" stroke="#EEF0F4"/><text x="${W-pr+6}" y="${y+3.5}" fill="#9AA0AC" font-family="Space Grotesk" font-size="10">${v.toFixed(dec)}</text>`;});
+  if(goal!=null){const y=Y(goal); g+=`<line x1="${pl}" y1="${y}" x2="${W-pr}" y2="${y}" stroke="${color}" stroke-width="1.4" stroke-dasharray="4 4" opacity=".55"/><text x="${pl+2}" y="${y-5}" fill="${color}" font-family="Space Grotesk" font-size="10" font-weight="600">cíl ${goal}</text>`;}
+  const d=pts.map((p,i)=>`${i?'L':'M'}${X(i).toFixed(1)} ${Y(p.v).toFixed(1)}`).join(' ');
+  let area=pts.length>1?`<path d="${d} L${X(pts.length-1)} ${H-pb} L${X(0)} ${H-pb} Z" fill="${color}" opacity=".06"/>`:'';
+  let line=pts.length>1?`<path d="${d}" fill="none" stroke="${color}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`:'';
+  let dots=pts.map((p,i)=>{const last=i===pts.length-1; return `<circle cx="${X(i)}" cy="${Y(p.v)}" r="${last?4.5:3}" fill="${last?color:'#fff'}" stroke="${color}" stroke-width="2"/>`;}).join('');
+  const lp=pts[pts.length-1];
+  const lab=`<text x="${X(pts.length-1)}" y="${Y(lp.v)-12}" text-anchor="end" fill="${color}" font-family="Space Grotesk" font-weight="700" font-size="14">${lp.v.toFixed(dec)}${unit?(' '+unit):''}</text>`;
+  const xl=`<text x="${pl}" y="${H-6}" fill="#9AA0AC" font-family="Hanken Grotesk" font-size="10">${fmtDate(pts[0].date)}</text>`+(pts.length>1?`<text x="${W-pr}" y="${H-6}" text-anchor="end" fill="#9AA0AC" font-family="Hanken Grotesk" font-size="10">${fmtDate(lp.date)}</text>`:'');
+  return `<svg viewBox="0 0 ${W} ${H}" role="img">${g}${area}${line}${dots}${lab}${xl}</svg>`;
+}
+function barChart(bars,{color='#2E5BFF'}={}){
+  const W=620,H=210,pl=8,pr=8,pt=24,pb=28; const max=Math.max(1,...bars.map(b=>b.v));
+  const n=bars.length||1, slot=(W-pl-pr)/n, bw=Math.min(46,slot*.62); const Y=v=>pt+(1-v/max)*(H-pt-pb); let g='';
+  bars.forEach((b,i)=>{ const x=pl+i*slot+(slot-bw)/2,y=Y(b.v),h=(H-pt-pb)-(y-pt);
+    if(b.v>0){ g+=`<rect x="${x}" y="${y}" width="${bw}" height="${Math.max(0,h)}" rx="5" fill="${color}"/><text x="${x+bw/2}" y="${y-6}" text-anchor="middle" fill="#14161F" font-family="Space Grotesk" font-weight="600" font-size="11">${b.v%1?b.v.toFixed(1):b.v}</text>`;}
+    else g+=`<rect x="${x}" y="${H-pb-3}" width="${bw}" height="3" rx="1.5" fill="#E5E8EE"/>`;
+    g+=`<text x="${x+bw/2}" y="${H-9}" text-anchor="middle" fill="#9AA0AC" font-family="Hanken Grotesk" font-size="10">${b.label}</text>`;});
+  return `<svg viewBox="0 0 ${W} ${H}" role="img">${g}</svg>`;
+}
+function stackChart(weeks){
+  const W=620,H=210,pl=8,pr=8,pt=24,pb=28,target=4; const max=Math.max(target,1,...weeks.map(w=>w.run+w.str));
+  const n=weeks.length||1,slot=(W-pl-pr)/n,bw=Math.min(40,slot*.6); const Y=v=>pt+(1-v/max)*(H-pt-pb);
+  let g=`<line x1="${pl}" y1="${Y(target)}" x2="${W-pr}" y2="${Y(target)}" stroke="#14161F" stroke-dasharray="4 4" opacity=".35"/><text x="${W-pr}" y="${Y(target)-5}" text-anchor="end" fill="#6B7180" font-family="Space Grotesk" font-size="10" font-weight="600">cíl 4×</text>`;
+  weeks.forEach((w,i)=>{ const x=pl+i*slot+(slot-bw)/2; let yb=H-pb;
+    const seg=(val,col)=>{if(val<=0)return; const h=(val/max)*(H-pt-pb); yb-=h; g+=`<rect x="${x}" y="${yb}" width="${bw}" height="${h}" rx="3" fill="${col}"/>`;};
+    seg(w.run,'#2E5BFF'); seg(w.str,'#F0992E'); const tot=w.run+w.str;
+    g+= tot>0?`<text x="${x+bw/2}" y="${yb-6}" text-anchor="middle" fill="#14161F" font-family="Space Grotesk" font-weight="600" font-size="11">${tot}</text>`:`<rect x="${x}" y="${H-pb-3}" width="${bw}" height="3" rx="1.5" fill="#E5E8EE"/>`;
+    g+=`<text x="${x+bw/2}" y="${H-9}" text-anchor="middle" fill="#9AA0AC" font-family="Hanken Grotesk" font-size="10">${w.label}</text>`;});
+  return `<svg viewBox="0 0 ${W} ${H}" role="img">${g}</svg>`;
+}
+function last8(){ const arr=[],mon=startOfWeek(new Date());
+  for(let i=7;i>=0;i--){ const d=new Date(mon); d.setDate(d.getDate()-i*7); const key=d.toISOString().slice(0,10);
+    const label=`${d.getDate()}.${d.getMonth()+1}.`;
+    const km=state.runs.filter(r=>weekKey(r.date)===key).reduce((s,r)=>s+(+r.km||0),0);
+    arr.push({key,label,km:Math.round(km*10)/10,run:state.runs.filter(r=>weekKey(r.date)===key).length,str:state.workouts.filter(w=>weekKey(w.date)===key).length}); }
+  return arr; }
+
+function render(){ renderWeek(); renderStats(); renderHero(); renderSecondary(); renderHistory(); renderSub(); }
+function renderSub(){ $('sub').textContent=`${state.runs.length} běhů · ${state.workouts.length} tréninků · ${state.measurements.length} měření · synced`; }
+function renderWeek(){
+  const mon=startOfWeek(new Date()),names=['Po','Út','St','Čt','Pá','So','Ne'],tkey=today(); let runs=0,strs=0,mobs=0,html='';
+  for(let i=0;i<7;i++){ const d=new Date(mon); d.setDate(d.getDate()+i); const ds=d.toISOString().slice(0,10);
+    const dr=state.runs.filter(r=>r.date===ds), dw=state.workouts.filter(w=>w.date===ds);
+    runs+=dr.length; dw.forEach(w=>{ if(w.type==='Mobilita')mobs++; else strs++; });
+    let chips=''; dr.forEach(r=>chips+=`<span class="chip run">${r.km?(+r.km).toFixed(1)+'k':'běh'}</span>`);
+    dw.forEach(w=>{ const cls=w.type==='Mobilita'?'mob':'str'; const t=w.type==='Síla A'?'síla A':w.type==='Síla B'?'síla B':w.type==='Mobilita'?'mobil.':'cvik'; chips+=`<span class="chip ${cls}">${t}</span>`; });
+    if(!chips) chips='<span class="empty">·</span>';
+    html+=`<div class="day ${ds===tkey?'today':''} ${(dr.length||dw.length)?'filled':''}"><span class="dl">${names[i]}</span><div class="lane">${chips}</div></div>`; }
+  $('weekDays').innerHTML=html; $('weekSum').innerHTML=`<b>${runs}</b> běhy · <b>${strs}</b> silové · <b>${mobs}</b> mobilita`;
+}
+function statCard(metric){ const cfg=METRICS[metric],s=seriesOf(metric);
+  if(!s.length) return `<div class="eyebrow">${cfg.label}</div><div class="val">—</div>`;
+  const latest=s[s.length-1].v,prev=s.length>1?s[s.length-2].v:null; let delta='';
+  if(prev!=null){ const diff=latest-prev,better=cfg.goodUp?diff>0:diff<0,cls=Math.abs(diff)<1e-9?'flat':(better?'up':'down'),arrow=Math.abs(diff)<1e-9?'→':(diff>0?'↑':'↓'); delta=`<div class="delta ${cls}">${arrow} ${Math.abs(diff).toFixed(cfg.dec)} ${cfg.unit}</div>`; }
+  else delta=`<div class="delta flat">první záznam</div>`;
+  let goal=''; if(cfg.goal){ const pct=Math.max(0,Math.min(100,(latest/cfg.goal)*100)); goal=`<div class="goalbar"><i style="width:${pct}%"></i></div><div class="goal-cap">${Math.round(pct)} % cíle ${cfg.goal}</div>`; }
+  return `<div class="eyebrow">${cfg.label}</div><div class="val num">${latest.toFixed(cfg.dec)}<span class="unit">${cfg.unit}</span></div>${delta}${goal}`;
+}
+function renderStats(){ $('statVo2').innerHTML=statCard('vo2max'); $('statWeight').innerHTML=statCard('weight'); $('statFat').innerHTML=statCard('bodyFat'); $('statRhr').innerHTML=statCard('restingHR'); }
+function renderHero(){ const cfg=METRICS[heroMetric]; $('heroTitle').textContent=cfg.label;
+  $('heroChart').innerHTML=lineChart(seriesOf(heroMetric),{color:'#2E5BFF',unit:cfg.unit,dec:cfg.dec,goal:cfg.goal||null});
+  [...document.querySelectorAll('#metricSwitch button')].forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===heroMetric)); }
+function renderSecondary(){ const wk=last8(); $('kmChart').innerHTML=barChart(wk.map(w=>({label:w.label,v:w.km}))); $('consChart').innerHTML=stackChart(wk); }
+function renderHistory(){
+  [...document.querySelectorAll('#histTabs .tab')].forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===histTab));
+  const body=$('histBody'),sort=a=>[...a].sort((x,y)=>x.date<y.date?1:-1);
+  if(histTab==='runs'){ const rows=sort(state.runs);
+    body.innerHTML=rows.length?`<table><thead><tr><th>Datum</th><th>Km</th><th>Čas</th><th>Tempo</th><th>Tep</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr><td>${fmtDate(r.date)}</td><td class="n">${(+r.km||0).toFixed(1)}</td><td class="n">${r.durationMin?(+r.durationMin)+' min':'—'}</td><td class="n">${pace(+r.durationMin,+r.km)} /km</td><td class="n">${r.avgHR||'—'}</td><td style="text-align:right"><button class="del" data-del="runs" data-id="${r.id}">✕</button></td></tr>`).join('')}</tbody></table>`:empty('běh','Zaloguj první výběh.');
+  } else if(histTab==='workouts'){ const rows=sort(state.workouts);
+    body.innerHTML=rows.length?`<table><thead><tr><th>Datum</th><th>Typ</th><th>Poznámka</th><th></th></tr></thead><tbody>${rows.map(w=>`<tr><td>${fmtDate(w.date)}</td><td>${w.type||'—'}</td><td style="color:var(--muted)">${w.notes||'—'}</td><td style="text-align:right"><button class="del" data-del="workouts" data-id="${w.id}">✕</button></td></tr>`).join('')}</tbody></table>`:empty('trénink','Po prvním tréninku se začne plnit týdenní pásek.');
+  } else { const rows=sort(state.measurements);
+    body.innerHTML=rows.length?`<table><thead><tr><th>Datum</th><th>Váha</th><th>Tuk</th><th>Pas</th><th>VO₂</th><th>Tep</th><th>HRV</th><th></th></tr></thead><tbody>${rows.map(m=>`<tr><td>${fmtDate(m.date)}</td><td class="n">${m.weight??'—'}</td><td class="n">${m.bodyFat??'—'}</td><td class="n">${m.waist??'—'}</td><td class="n">${m.vo2max??'—'}</td><td class="n">${m.restingHR??'—'}</td><td class="n">${m.hrv??'—'}</td><td style="text-align:right"><button class="del" data-del="measurements" data-id="${m.id}">✕</button></td></tr>`).join('')}</tbody></table>`:empty('měření','Zapiš váhu nebo VO₂max a graf ožije.'); }
+}
+function empty(k,m){ return `<div class="empty-state"><b>Zatím žádný ${k}.</b><br>${m}</div>`; }
+
+$('metricSwitch').addEventListener('click',e=>{const b=e.target.closest('button'); if(b){heroMetric=b.dataset.m; renderHero();}});
+$('histTabs').addEventListener('click',e=>{const b=e.target.closest('button'); if(b){histTab=b.dataset.t; renderHistory();}});
+$('histBody').addEventListener('click',e=>{const b=e.target.closest('[data-del]'); if(b&&confirm('Smazat tento záznam?')) delRow(b.dataset.del,b.dataset.id,b.dataset.del);});
+
+const scrim=$('scrim');
+function openModal(html,title){ $('modalTitle').textContent=title; $('modalForm').innerHTML=html; scrim.classList.add('open'); }
+function closeModal(){ scrim.classList.remove('open'); }
+$('modalX').onclick=closeModal; scrim.addEventListener('click',e=>{if(e.target===scrim)closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+document.querySelectorAll('[data-add]').forEach(b=>b.addEventListener('click',()=>openAdd(b.dataset.add)));
+
+function openAdd(kind){
+  if(kind==='run'){
+    openModal(`<div class="field"><label>Datum</label><input type="date" id="f-date" value="${today()}"></div>
+      <div class="row2"><div class="field"><label>Vzdálenost (km)</label><input type="number" id="f-km" step="0.1" min="0" placeholder="napr. 6.2"></div>
+      <div class="field"><label>Čas (min)</label><input type="number" id="f-min" step="1" min="0" placeholder="napr. 36"></div></div>
+      <div class="field"><label>Průměrný tep (volitelné)</label><input type="number" id="f-hr" step="1" min="0" placeholder="bpm"></div>
+      <div class="field"><label>Poznámka</label><input type="text" id="f-note" placeholder="Zóna 2, intervaly…"></div>
+      <div class="hint">Tempo /km se dopočítá z km a času.</div>
+      <button class="btn btn-primary" id="f-save">Uložit běh</button>`,'Nový běh');
+    $('f-save').onclick=async ()=>{ const km=+$('f-km').value,min=+$('f-min').value; if(!km){alert('Zadej aspoň vzdálenost.');return;}
+      $('f-save').disabled=true; const ok=await addRow('runs',{date:$('f-date').value,km,duration_min:min||null,avg_hr:+$('f-hr').value||null,notes:$('f-note').value.trim()||null},fromRun,'runs'); if(ok)closeModal(); else $('f-save').disabled=false; };
+  }
+  if(kind==='workout'){
+    openModal(`<div class="field"><label>Datum</label><input type="date" id="f-date" value="${today()}"></div>
+      <div class="field"><label>Typ</label><select id="f-type"><option>Síla A</option><option>Síla B</option><option>Mobilita</option><option>Jiný pohyb</option></select></div>
+      <div class="field"><label>Poznámka</label><textarea id="f-note" rows="2" placeholder="Co se povedlo, váhy, pocit…"></textarea></div>
+      <button class="btn btn-primary" id="f-save">Uložit trénink</button>`,'Nový trénink');
+    $('f-save').onclick=async ()=>{ $('f-save').disabled=true; const ok=await addRow('workouts',{date:$('f-date').value,type:$('f-type').value,notes:$('f-note').value.trim()||null},fromWork,'workouts'); if(ok)closeModal(); else $('f-save').disabled=false; };
+  }
+  if(kind==='measurement'){
+    openModal(`<div class="field"><label>Datum</label><input type="date" id="f-date" value="${today()}"></div>
+      <div class="row2"><div class="field"><label>Váha (kg)</label><input type="number" id="f-weight" step="0.1" min="0" placeholder="83.0"></div>
+      <div class="field"><label>Tuk (%)</label><input type="number" id="f-fat" step="0.1" min="0" placeholder="14.6"></div></div>
+      <div class="row2"><div class="field"><label>Pas (cm)</label><input type="number" id="f-waist" step="0.5" min="0" placeholder="90"></div>
+      <div class="field"><label>Viscerální tuk</label><input type="number" id="f-visc" step="0.1" min="0" placeholder="2.2"></div></div>
+      <div class="row2"><div class="field"><label>VO₂max</label><input type="number" id="f-vo2" step="0.1" min="0" placeholder="45.7"></div>
+      <div class="field"><label>Klidový tep</label><input type="number" id="f-rhr" step="1" min="0" placeholder="58"></div></div>
+      <div class="field"><label>HRV (ms)</label><input type="number" id="f-hrv" step="1" min="0" placeholder="53"></div>
+      <div class="hint">Vyplň jen to, co máš — prázdná pole se ignorují.</div>
+      <button class="btn btn-primary" id="f-save">Uložit měření</button>`,'Nové měření');
+    $('f-save').onclick=async ()=>{ const g=id=>{const v=$(id).value; return v===''?null:+v;};
+      const row={date:$('f-date').value,weight:g('f-weight'),body_fat:g('f-fat'),waist:g('f-waist'),visceral:g('f-visc'),vo2max:g('f-vo2'),resting_hr:g('f-rhr'),hrv:g('f-hrv'),notes:null};
+      if(['weight','body_fat','waist','visceral','vo2max','resting_hr','hrv'].every(k=>row[k]==null)){alert('Vyplň aspoň jednu hodnotu.');return;}
+      $('f-save').disabled=true; const ok=await addRow('measurements',row,fromMeas,'measurements'); if(ok)closeModal(); else $('f-save').disabled=false; };
+  }
+}
+
+$('exportBtn').onclick=()=>{ const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`forma-data-${today()}.json`; a.click(); URL.revokeObjectURL(a.href); };
+$('importBtn').onclick=()=>$('importFile').click();
+$('importFile').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f)return; const rd=new FileReader();
+  rd.onload=async ()=>{ try{ const d=JSON.parse(rd.result); if(!d||!('runs'in d)) throw 0;
+    if(!confirm('Naimportovat záznamy ze souboru do databáze? (přidá je k aktuálním)')) return;
+    syncing(true,'Importuji…');
+    const mRows=(d.measurements||[]).map(m=>({date:m.date,weight:m.weight??null,body_fat:m.bodyFat??null,waist:m.waist??null,visceral:m.visceral??null,vo2max:m.vo2max??null,resting_hr:m.restingHR??null,hrv:m.hrv??null,notes:m.notes??null}));
+    const rRows=(d.runs||[]).map(r=>({date:r.date,km:r.km??null,duration_min:r.durationMin??null,avg_hr:r.avgHR??null,notes:r.notes??null}));
+    const wRows=(d.workouts||[]).map(w=>({date:w.date,type:w.type??null,notes:w.notes??null}));
+    if(mRows.length) await sb.from('measurements').insert(mRows);
+    if(rRows.length) await sb.from('runs').insert(rRows);
+    if(wRows.length) await sb.from('workouts').insert(wRows);
+    await loadAll(); render(); syncing(false);
+  }catch(err){ syncing(false); alert('Soubor se nepodařilo načíst.'); } };
+  rd.readAsText(f); e.target.value=''; });
+</script>
+</body>
+</html>
