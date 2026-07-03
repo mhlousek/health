@@ -310,11 +310,12 @@ async function delRow(table,id,arr){
 }
 
 /* ---------- helpers ---------- */
-function today(){ return new Date().toISOString().slice(0,10); }
+function localISO(d){ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),da=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${da}`; }
+function today(){ return localISO(new Date()); }
 function parseD(s){ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
 function fmtDate(s){ return parseD(s).toLocaleDateString('cs-CZ',{day:'numeric',month:'short'}); }
 function startOfWeek(d){ const x=new Date(d); const k=(x.getDay()+6)%7; x.setDate(x.getDate()-k); x.setHours(0,0,0,0); return x; }
-function weekKey(s){ return startOfWeek(parseD(s)).toISOString().slice(0,10); }
+function weekKey(s){ return localISO(startOfWeek(parseD(s))); }
 function pace(min,km){ if(!km||!min) return '—'; const p=min/km, m=Math.floor(p), sec=Math.round((p-m)*60); return `${m}:${String(sec).padStart(2,'0')}`; }
 
 const METRICS={
@@ -392,7 +393,7 @@ function stackChart(weeks,{colors}={}){
   return `<svg viewBox="0 0 ${w} ${h}" role="img">${g}</svg>`;
 }
 function last8(){ const arr=[],mon=startOfWeek(new Date());
-  for(let i=7;i>=0;i--){ const d=new Date(mon); d.setDate(d.getDate()-i*7); const key=d.toISOString().slice(0,10);
+  for(let i=7;i>=0;i--){ const d=new Date(mon); d.setDate(d.getDate()-i*7); const key=localISO(d);
     arr.push({key,label:`${d.getDate()}.${d.getMonth()+1}.`,km:Math.round(state.runs.filter(r=>weekKey(r.date)===key).reduce((s,r)=>s+(+r.km||0),0)*10)/10,run:state.runs.filter(r=>weekKey(r.date)===key).length,str:state.workouts.filter(w=>weekKey(w.date)===key).length}); }
   return arr; }
 
@@ -401,7 +402,7 @@ function render(){ renderWeek(); renderMetrics(); renderSecondary(); renderHisto
 function renderSub(){ $('sub').textContent=`${state.runs.length} běhů · ${state.workouts.length} tréninků · ${state.measurements.length} měření · synced`; }
 function renderWeek(){
   const mon=startOfWeek(new Date()),names=['Po','Út','St','Čt','Pá','So','Ne'],tkey=today(); let runs=0,strs=0,mobs=0,html='';
-  for(let i=0;i<7;i++){ const d=new Date(mon); d.setDate(d.getDate()+i); const ds=d.toISOString().slice(0,10);
+  for(let i=0;i<7;i++){ const d=new Date(mon); d.setDate(d.getDate()+i); const ds=localISO(d);
     const dr=state.runs.filter(r=>r.date===ds), dw=state.workouts.filter(w=>w.date===ds);
     runs+=dr.length; dw.forEach(w=>{ if(w.type==='Mobilita')mobs++; else strs++; });
     let chips=''; dr.forEach(r=>chips+=`<span class="chip run">${r.km?(+r.km).toFixed(1)+'k':'běh'}</span>`);
